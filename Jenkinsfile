@@ -17,7 +17,7 @@ pipeline{
       IMAGE_VERSION = "v1.0"
 
 //引用Jenkins配置的全局秘钥信息
-      ALIYUN_SECRTE=credentials("aliyun-docker-repo")
+     // ALIYUN_SECRTE=credentials("aliyun-docker-repo")
     }
 
     //定义流水线的加工流程
@@ -40,14 +40,7 @@ pipeline{
         //1、编译 "abc"
         stage('maven编译'){
             //jenkins不配置任何环境的情况下， 仅适用docker 兼容所有场景
-            agent {
-                docker {
-                    image 'maven:3-alpine'
-                    args '-v /var/jenkins_home/appconfig/maven/.m2:/root/.m2'
-//                     args  '-v /a/settings.xml:/app/settings.xml'
-                    //docker run -v /a/settings.xml:/app/settings.xml
-                 }
-            }
+
             steps {
                //git下载来的代码目录下
                sh 'pwd && ls -alh'
@@ -80,7 +73,7 @@ pipeline{
                 //检查Jenkins的docker命令是否能运行
                 sh 'docker version'
                 sh 'pwd && ls -alh'
-                sh 'docker build -t java-devops-demo .'
+
 
                 //镜像就可以进行保存
 
@@ -95,15 +88,7 @@ pipeline{
              //step里面卡点这么写
 //              input message: '需要推送远程镜像吗？', ok: '需要', parameters: [text(defaultValue: 'v1.0', description: '生产环境需要部署的版本', name: 'APP_VER')]
 
-             //step外面这么写
-             input {
-                 message "需要推送远程镜像吗?"
-                 ok "需要"
-                 parameters {
-                     string(name: 'APP_VER', defaultValue: 'v1.0', description: '生产环境需要部署的版本')
-                     choice choices: ['bj-01', 'sh-02', 'wuhan-01'], description: '部署的大区', name: 'DEPLOY_WHERE'
-                 }
-             }
+
 
 
              steps {
@@ -127,48 +112,14 @@ pipeline{
                 //Generic Webhook Trigger + script脚本 + 其他已讲过的内容 + 其他自己看看官网 = 搞定
                 //别人提交一个issue，jenkins触发 自动把issue做成 fix分支，让程序员自己去修改
                 //所有东西都是模板
-                script {
-                   //groovy
-                   def  where = "${DEPLOY_WHERE}"
 
-                   if (where == "bj-01"){
-                    sh "echo 我帮你部署到 bj-01 区了"
-                   }else if(where == "sh-02"){
-                   sh "echo 我帮你部署到 sh-02 区了"
-                   }else{
-                        sh "echo 没人要的，我帮你部署到 wuhan-01 区了"
-//                    sh "docker push registry.cn-hangzhou.aliyuncs.com/lfy/java-devops-demo:${APP_VER}"
-                        withCredentials([usernamePassword(credentialsId: 'aliyun-docker-repo', passwordVariable: 'ali_pwd', usernameVariable: 'ali_user')]) {
-                            // some block
-                             sh "docker login -u ${ali_user} -p ${ali_pwd}   registry.cn-hangzhou.aliyuncs.com"
-//                              sh "docker tag java-devops-demo registry.cn-hangzhou.aliyuncs.com/lfy/java-devops-demo:${APP_VER}"
-                        }
-
-                        //ssh 秘钥文件配置到 jenkins 全局秘钥中
-                        withCredentials(ssh){
-                          //ansible 没有
-                          sh "ssh root@xxxx  "
-                          //不应该的操作。
-                          sh "远程操作其他机器。。。。"
-
-                          //k8s集群
-                          //动态切换k8s集群
-
-                        }
-                   }
-                }
-
-//                 sh "docker push registry.cn-hangzhou.aliyuncs.com/lfy/java-devops-demo:${APP_VER}"
-
-             }
          }
 
         //4、部署
         stage('部署'){
             steps {
                 echo "部署..."
-                sh 'docker rm -f java-devops-demo-dev'
-                sh 'docker run -d -p 8888:8080 --name java-devops-demo-dev java-devops-demo'
+
             }
 
             //后置执行
@@ -187,74 +138,13 @@ pipeline{
         //5、推送报告
         stage("发送报告"){
             steps {
-                //短信通知，购买api接口即可
-//                 sh 'curl -i -k -X POST 'https://gyytz.market.alicloudapi.com/sms/smsSend?mobile=mobile&param=**code**%3A12345%2C**minute**%3A5&smsSignId=2e65b1bb3d054466b82f0c9d125465e2&templateId=908e94ccf08b4476ba6c876d13f084ad'  -H 'Authorization:APPCODE dddddddd''
-                //REST API 所有都行
-//                 sh 'curl '
-                echo '准备发送报告'
-                emailext body: '''<!DOCTYPE html>
-                <html>
-                <head>
-                <meta charset="UTF-8">
-                <title>${ENV, var="JOB_NAME"}-第${BUILD_NUMBER}次构建日志</title>
-                </head>
-
-                <body leftmargin="8" marginwidth="0" topmargin="8" marginheight="4"
-                    offset="0">
-                    <table width="95%" cellpadding="0" cellspacing="0"  style="font-size: 11pt; font-family: Tahoma, Arial, Helvetica, sans-serif">
-                <h3>本邮件由系统自动发出，请勿回复！</h3>
-                        <tr>
-                           <br/>
-                            各位同事，大家好，以下为${PROJECT_NAME }项目构建信息</br>
-                            <td><font color="#CC0000">构建结果 - ${BUILD_STATUS}</font></td>
-                        </tr>
-                        <tr>
-                            <td><br />
-                            <b><font color="#0B610B">构建信息</font></b>
-                            <hr size="2" width="100%" align="center" /></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <ul>
-                                    <li>项目名称 ： ${PROJECT_NAME}</li>
-                                    <li>构建编号 ： 第${BUILD_NUMBER}次构建</li>
-                                    <li>触发原因： ${CAUSE}</li>
-                                    <li>构建状态： ${BUILD_STATUS}</li>
-                                    <li>构建日志： <a href="${BUILD_URL}console">${BUILD_URL}console</a></li>
-                                    <li>构建  Url ： <a href="${BUILD_URL}">${BUILD_URL}</a></li>
-                                    <li>工作目录 ： <a href="${PROJECT_URL}ws">${PROJECT_URL}ws</a></li>
-                                    <li>项目  Url ： <a href="${PROJECT_URL}">${PROJECT_URL}</a></li>
-                                </ul>
-
-
-                <h4><font color="#0B610B">最近提交</font></h4>
-                <ul>
-                <hr size="2" width="100%" />
-                ${CHANGES_SINCE_LAST_SUCCESS, reverse=true, format="%c", changesFormat="<li>%d [%a] %m</li>"}
-                </ul>
-                详细提交: <a href="${PROJECT_URL}changes">${PROJECT_URL}changes</a><br/>
-
-                            </td>
-                        </tr>
-                    </table>
-                </body>
-                </html>''', subject: '${ENV, var="JOB_NAME"}-第${BUILD_NUMBER}次构建日志', to: '17512080612@163.com'
-            }
         }
 
         stage('部署到生产环境吗？'){
             steps {
                 // 手动输入版本【参数化构建】,推荐生成器
 
-//                 input {
-//                     message "需要部署到生产环境吗?"
-//                     ok "是的，赶紧部署"
-// //                     submitter "alice,bob"
-//                     parameters {
-//                         //手动传入的参数
-//                         string(name: 'APP_VERSION', defaultValue: 'v1.0', description: '请指定生产版本号')
-//                     }
-//                 }
+//
                 sh "echo 发布版本咯......"
                 // 版本的保存。代码的保存。镜像的保存。存到远程仓库
 
