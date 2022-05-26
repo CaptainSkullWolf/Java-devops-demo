@@ -99,6 +99,7 @@ pipeline{
         //5、推送报告
         stage("发送报告"){
             steps {
+            echo "skullwolf"
         }
 }
         stage('部署到生产环境吗？'){
