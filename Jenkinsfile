@@ -52,7 +52,7 @@ pipeline{
         //2、测试，每一个 stage的开始，都会重置到默认的WORKSPACE位置
         stage('测试'){
             steps {
-
+            echo "测试"
 
             }
         }
