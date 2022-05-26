@@ -16,8 +16,7 @@ pipeline{
       WS = "${WORKSPACE}"
       IMAGE_VERSION = "v1.0"
 
-//引用Jenkins配置的全局秘钥信息
-     // ALIYUN_SECRTE=credentials("aliyun-docker-repo")
+
     }
 
     //定义流水线的加工流程
@@ -42,18 +41,10 @@ pipeline{
             //jenkins不配置任何环境的情况下， 仅适用docker 兼容所有场景
 
             steps {
-               //git下载来的代码目录下
+
                sh 'pwd && ls -alh'
                sh 'mvn -v'
-               //打包，jar.。默认是从maven中央仓库下载。 jenkins目录+容器目录；-s指定容器内位置
-               //只要jenkins迁移，不会对我们产生任何影响
-               sh "echo 默认的工作目录：${WS}"
-//                sh 'cd ${WS}'
-               //workdir
-               //每一行指令都是基于当前环境信息。和上下指令无关
-               //sh 'cd ${WS} && mvn clean package -s "/var/jenkins_home/appconfig/maven/settings.xml"  -Dmaven.test.skip=true '
-               //jar包推送给maven repo ，nexus
-               //如何让他适用阿里云镜像源
+
 
             }
         }
@@ -84,11 +75,6 @@ pipeline{
 
 
          stage('推送镜像'){
-         //没有起容器代理，默认就是jenkins环境
-             //step里面卡点这么写
-//              input message: '需要推送远程镜像吗？', ok: '需要', parameters: [text(defaultValue: 'v1.0', description: '生产环境需要部署的版本', name: 'APP_VER')]
-
-
 
 
              steps {
@@ -97,21 +83,6 @@ pipeline{
                 echo "$APP_VER"
 
 
-                //脚本方式进行判断，和具体逻辑
-                // 远程触发，自动分析是哪个分支，如果是master就部署生产，dev就集成测试等
-                // gulimall
-                //    mall-order
-                //    mall-user
-                //    xx 100个微服务
-                //  哪一个微服务代码提交了部署哪一个微服务，不用手工干预，只需要一个jenkinsfile
-                //Generic Webhook Trigger 远程触发jenkins，jenkins获取当前提交的分支，和所有分支
-                // gitee会告诉我们这次 add了哪些，modify了哪些，delete了哪些，
-                // add了哪些，modify了哪些，delete了哪些， 自己判断这些修改的文件在哪个模块下
-                //对这个模块进行持续集成
-
-                //Generic Webhook Trigger + script脚本 + 其他已讲过的内容 + 其他自己看看官网 = 搞定
-                //别人提交一个issue，jenkins触发 自动把issue做成 fix分支，让程序员自己去修改
-                //所有东西都是模板
 
          }
 
@@ -122,17 +93,7 @@ pipeline{
 
             }
 
-            //后置执行
-//             post {
-//               failure {
-//                 // One or more steps need to be included within each condition's block.
-//                 echo "炸了.. ."
-//               }
-//
-//               success {
-//                 echo "成了..."
-//               }
-//             }
+
         }
 
         //5、推送报告
@@ -155,15 +116,6 @@ pipeline{
 
 
 
-//后置处理过程
-        post {
-          failure {
-            echo "这个阶段 完蛋了.... $currentBuild.result"
-          }
-          success {
-            echo "这个阶段 成了.... $currentBuild.result"
-          }
-        }
 
 
 }
