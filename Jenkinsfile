@@ -74,18 +74,7 @@ pipeline{
 
 
 
-         stage('推送镜像'){
 
-
-             steps {
-                //false就直接结束
-
-                echo "$APP_VER"
-
-
-
-         }
-}
 
 
 
