@@ -85,7 +85,7 @@ pipeline{
 
 
          }
-
+}
         //4、部署
         stage('部署'){
             steps {
@@ -100,7 +100,7 @@ pipeline{
         stage("发送报告"){
             steps {
         }
-
+}
         stage('部署到生产环境吗？'){
             steps {
                 // 手动输入版本【参数化构建】,推荐生成器
@@ -113,9 +113,6 @@ pipeline{
         }
 
     }
-
-
-
 
 
 }
