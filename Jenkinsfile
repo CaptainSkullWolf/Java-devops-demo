@@ -86,29 +86,10 @@ pipeline{
 
          }
 }
-        //4、部署
-        stage('部署'){
-            steps {
-                echo "部署..."
-
-            }
 
 
-        }
 
-        //5、推送报告
-        stage("发送报告"){
-            steps {
-            echo "skullwolf"
-        }
-}
-        stage('部署到生产环境吗？'){
-            steps {
-                // 手动输入版本【参数化构建】,推荐生成器
-                echo "skulwolf"
 
-            }
-        }
 
     }
 
