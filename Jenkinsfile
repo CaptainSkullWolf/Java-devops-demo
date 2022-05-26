@@ -33,7 +33,7 @@ pipeline{
                sh "echo $hello"
                //未来，凡是需要取变量值的时候，都用双引号
                sh 'echo ${world}'
-               sh "ssh --help"
+
             }
         }
         //1、编译 "abc"
@@ -42,8 +42,8 @@ pipeline{
 
             steps {
 
-               sh 'pwd && ls -alh'
-               sh 'mvn -v'
+                   echo "编译..."
+
 
 
             }
@@ -52,8 +52,8 @@ pipeline{
         //2、测试，每一个 stage的开始，都会重置到默认的WORKSPACE位置
         stage('测试'){
             steps {
-                sh 'pwd && ls -alh'
-                echo "测试..."
+
+
             }
         }
 
@@ -62,7 +62,7 @@ pipeline{
             steps {
                 echo "打包..."
                 //检查Jenkins的docker命令是否能运行
-                sh 'docker version'
+
                 sh 'pwd && ls -alh'
 
 
@@ -105,10 +105,7 @@ pipeline{
         stage('部署到生产环境吗？'){
             steps {
                 // 手动输入版本【参数化构建】,推荐生成器
-
-//
-                sh "echo 发布版本咯......"
-                // 版本的保存。代码的保存。镜像的保存。存到远程仓库
+                echo "skulwolf"
 
             }
         }
